@@ -9,7 +9,7 @@ let lastProjectId = 1;
 // Function to fetch projects
 async function fetchProjects() {
   try {
-    const response = await fetch('https://119.45.185.193/v1/chain/get_table_rows', {
+    const response = await fetch('https://api.dfs.land/v1/chain/get_table_rows', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
