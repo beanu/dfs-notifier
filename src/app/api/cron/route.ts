@@ -1,5 +1,18 @@
 import { NextResponse } from 'next/server';
 
+// Define types for the project
+interface Project {
+  id: number;
+  creator: string;
+  project_name: string;
+  nft_name: string;
+  nft_img: string;
+  desc: string;
+  init_nft_number: number;
+  init_nft_price: string;
+  create_time: string;
+}
+
 // DingTalk webhook URL
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
@@ -7,9 +20,9 @@ const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 let lastProjectId = 1;
 
 // Function to fetch projects
-async function fetchProjects() {
+async function fetchProjects(): Promise<Project[]> {
   try {
-    const response = await fetch('https://api.dfs.land/v1/chain/get_table_rows', {
+    const response = await fetch('https://8.138.81.44/v1/chain/get_table_rows', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +43,7 @@ async function fetchProjects() {
     });
 
     const data = await response.json();
-    return data.rows;
+    return data.rows as Project[];
   } catch (error) {
     console.error('Error fetching projects:', error);
     return [];
@@ -38,7 +51,7 @@ async function fetchProjects() {
 }
 
 // Function to send DingTalk message
-async function sendDingTalkMessage(project: any) {
+async function sendDingTalkMessage(project: Project): Promise<void> {
   if (!dingTalkWebhookUrl) {
     console.error('DingTalk webhook URL is missing');
     return;
@@ -88,7 +101,7 @@ export async function GET() {
       // Check if we have new projects
       if (lastProjectId > 0 && latestProjectId > lastProjectId) {
         // Get all new projects
-        const newProjects = projects.filter(p => p.id > lastProjectId);
+        const newProjects = projects.filter((p: Project) => p.id > lastProjectId);
         
         // Send notification for each new project
         for (const project of newProjects) {
