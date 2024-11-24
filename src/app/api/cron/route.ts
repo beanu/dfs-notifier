@@ -17,7 +17,7 @@ interface Project {
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
 // Store the last known project ID
-let lastProjectId = 1;
+let lastProjectId = 109;
 
 // Function to fetch projects
 async function fetchProjects(): Promise<Project[]> {
