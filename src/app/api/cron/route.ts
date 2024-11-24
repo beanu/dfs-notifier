@@ -13,11 +13,17 @@ interface Project {
   create_time: string;
 }
 
+interface TokenBalance {
+  code: string;
+  account: string;
+  symbol: string | null;
+}
+
 // DingTalk webhook URL
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
 // Store the last known project ID
-let lastProjectId = 109;
+let lastProjectId = 112;
 
 // Function to fetch projects
 async function fetchProjects(): Promise<Project[]> {
@@ -50,12 +56,39 @@ async function fetchProjects(): Promise<Project[]> {
   }
 }
 
+// Function to fetch token balance
+async function fetchTokenBalance(creator: string, tokenCode: string): Promise<string[]> {
+  try {
+    const response = await fetch('https://8.138.81.44/v1/chain/get_currency_balance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: tokenCode,
+        account: creator,
+        symbol: null
+      })
+    });
+
+    const data = await response.json();
+    return data as string[];
+  } catch (error) {
+    console.error(`Error fetching ${tokenCode} balance:`, error);
+    return [];
+  }
+}
+
 // Function to send DingTalk message
 async function sendDingTalkMessage(project: Project): Promise<void> {
   if (!dingTalkWebhookUrl) {
     console.error('DingTalk webhook URL is missing');
     return;
   }
+
+  // Fetch creator's balances
+  const dfsBalances = await fetchTokenBalance(project.creator, 'eosio.token');
+  const tokenBalances = await fetchTokenBalance(project.creator, 'dfsppptokens');
 
   const message = {
     msgtype: "text",
@@ -66,7 +99,10 @@ async function sendDingTalkMessage(project: Project): Promise<void> {
         `👤 创建者: ${project.creator}\n` +
         `💰 初始价格: ${project.init_nft_price}\n` +
         `🔢 初始NFT数量: ${project.init_nft_number}\n` +
-        `📅 创建时间: ${project.create_time}`
+        `📅 创建时间: ${project.create_time}\n\n` +
+        `💎 创建者资产:\n` +
+        `DFS代币: ${dfsBalances.length > 0 ? dfsBalances[0] : '0 DFS'}\n` +
+        `其他代币:\n${tokenBalances.map(balance => `- ${balance}`).join('\n')}`
     },
     at: {
       isAtAll: false
