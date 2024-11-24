@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
 // Store the last known project ID
-let lastProjectId = 0;
+let lastProjectId = 1;
 
 // Function to fetch projects
 async function fetchProjects() {
