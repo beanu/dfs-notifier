@@ -47,7 +47,7 @@ async function sendDingTalkMessage(project: any) {
   const message = {
     msgtype: "text",
     text: {
-      content: `🆕 新项目创建提醒!\n\n` +
+      content: `🆕 DFS 新项目创建提醒!\n\n` +
         `📝 项目名称: ${project.project_name}\n` +
         `🎨 NFT名称: ${project.nft_name}\n` +
         `👤 创建者: ${project.creator}\n` +
