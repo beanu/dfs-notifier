@@ -1,0 +1,162 @@
+import { NextResponse } from 'next/server';
+
+interface Project {
+  id: number;
+  project_name: string;
+  last_round: string;
+  sec_per_round: number;
+}
+
+interface LikedProject {
+  pid: number;
+  time: string;
+}
+
+// DingTalk webhook URL
+const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
+
+// Function to fetch projects
+async function fetchProjects(): Promise<Project[]> {
+  try {
+    const response = await fetch('https://8.138.81.44/v1/chain/get_table_rows', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        json: true,
+        code: "dfs3protocol",
+        scope: "dfs3protocol",
+        table: "projects",
+        lower_bound: "",
+        upper_bound: "",
+        index_position: 1,
+        key_type: "",
+        limit: -1,
+        reverse: true,
+        show_payer: false
+      }),
+    });
+
+    const data = await response.json();
+    return data.rows;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return [];
+  }
+}
+
+// Function to fetch liked projects
+async function fetchLikedProjects(account: string): Promise<LikedProject[]> {
+  try {
+    const response = await fetch('https://8.138.81.44/v1/chain/get_table_rows', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        json: true,
+        code: "dfs3protocol",
+        scope: account,
+        table: "likes",
+        lower_bound: "",
+        upper_bound: "",
+        index_position: 1,
+        key_type: "",
+        limit: -1,
+        reverse: false,
+        show_payer: false
+      }),
+    });
+
+    const data = await response.json();
+    return data.rows;
+  } catch (error) {
+    console.error('Error fetching liked projects:', error);
+    return [];
+  }
+}
+
+// Function to check project countdown
+function checkProjectCountdown(project: Project): { shouldNotify: boolean; minutesLeft: number } {
+  const lastRound = new Date(project.last_round);
+  const nextRound = new Date(lastRound.getTime() + (project.sec_per_round * 1000));
+  const now = new Date();
+  
+  // Calculate time difference in minutes
+  const timeDiff = (nextRound.getTime() - now.getTime()) / (1000 * 60);
+  
+  // Only notify at exactly 10 minutes or 3 minutes
+  // We use a small threshold (±30 seconds) to ensure we don't miss the exact minute
+  const threshold = 0.5; // 30 seconds threshold
+  const shouldNotify = 
+    (Math.abs(timeDiff - 10) < threshold) || 
+    (Math.abs(timeDiff - 3) < threshold);
+  
+  return { shouldNotify, minutesLeft: Math.round(timeDiff) };
+}
+
+// Function to send countdown notification
+async function sendCountdownNotification(project: Project, minutesLeft: number): Promise<void> {
+  if (!dingTalkWebhookUrl) {
+    console.error('DingTalk webhook URL not configured');
+    return;
+  }
+
+  const nextRoundTime = new Date(new Date(project.last_round).getTime() + (project.sec_per_round * 1000));
+  
+  const message = {
+    msgtype: 'markdown',
+    markdown: {
+      title: '项目倒计时提醒',
+      text: `### 项目倒计时提醒\n` +
+            `- 项目名称：${project.project_name}\n` +
+            `- 项目ID：${project.id}\n` +
+            `- 下一轮开始时间：${nextRoundTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}\n` +
+            `- ⏰ 距离下一轮开始还有${minutesLeft}分钟，请做好准备！`
+    }
+  };
+
+  try {
+    const response = await fetch(dingTalkWebhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to send DingTalk message: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error sending DingTalk message:', error);
+  }
+}
+
+// Main handler for the cron job
+export async function GET() {
+  try {
+    // Fetch all projects
+    const projects = await fetchProjects();
+    
+    // Fetch liked projects
+    const likedProjects = await fetchLikedProjects("zhaoyunhello");
+    
+    // Check countdown for liked projects
+    for (const project of projects) {
+      const isLiked = likedProjects.some(lp => lp.pid === project.id);
+      if (isLiked) {
+        const { shouldNotify, minutesLeft } = checkProjectCountdown(project);
+        if (shouldNotify) {
+          await sendCountdownNotification(project, minutesLeft);
+        }
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error in cron job:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+  }
+}

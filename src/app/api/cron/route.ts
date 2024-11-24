@@ -79,6 +79,21 @@ async function fetchTokenBalance(creator: string, tokenCode: string): Promise<st
   }
 }
 
+// Function to convert UTC to local time
+function convertToLocalTime(utcTime: string): string {
+  const date = new Date(utcTime);
+  return date.toLocaleString('zh-CN', { 
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+}
+
 // Function to send DingTalk message
 async function sendDingTalkMessage(project: Project): Promise<void> {
   if (!dingTalkWebhookUrl) {
@@ -99,7 +114,7 @@ async function sendDingTalkMessage(project: Project): Promise<void> {
         `👤 创建者: ${project.creator}\n` +
         `💰 初始价格: ${project.init_nft_price}\n` +
         `🔢 初始NFT数量: ${project.init_nft_number}\n` +
-        `📅 创建时间: ${project.create_time}\n\n` +
+        `📅 创建时间: ${convertToLocalTime(project.create_time)}\n\n` +
         `💎 创建者资产:\n` +
         `DFS代币: ${dfsBalances.length > 0 ? dfsBalances[0] : '0 DFS'}\n` +
         `其他代币:\n${tokenBalances.map(balance => `- ${balance}`).join('\n')}`
