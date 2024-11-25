@@ -83,16 +83,17 @@ function checkProjectCountdown(project: Project): { shouldNotify: boolean; minut
   const nextRound = new Date(lastRound.getTime() + (project.sec_per_round * 1000));
   const now = new Date();
   
-  // 计算距离下一轮的分钟数
-  const timeDiff = (nextRound.getTime() - now.getTime()) / (1000 * 60);
+  // 计算距离下一轮的分钟数和秒数
+  const timeDiffMs = nextRound.getTime() - now.getTime();
+  const timeDiffMinutes = Math.floor(timeDiffMs / (1000 * 60));
+  const timeDiffSeconds = Math.floor((timeDiffMs / 1000) % 60);
   
-  // 将分钟数向下取整
-  const roundedMinutes = Math.floor(timeDiff);
+  // 只在整好10分钟或3分钟，且在每分钟的前30秒内发送通知
+  // 这样可以确保在每个目标时间点只发送一次通知
+  const shouldNotify = 
+    (timeDiffMinutes === 10 || timeDiffMinutes === 3)
   
-  // 只在整好10分钟或3分钟时发送通知
-  const shouldNotify = roundedMinutes === 10 || roundedMinutes === 3;
-  
-  return { shouldNotify, minutesLeft: roundedMinutes };
+  return { shouldNotify, minutesLeft: timeDiffMinutes };
 }
 
 // Function to send countdown notification
