@@ -108,7 +108,7 @@ async function sendCountdownNotification(project: Project, minutesLeft: number):
   const message = {
     msgtype: 'markdown',
     markdown: {
-      title: '项目倒计时提醒',
+      title: 'DFS项目倒计时提醒',
       text: `### 项目倒计时提醒\n` +
             `- 项目名称：${project.project_name}\n` +
             `- 项目ID：${project.id}\n` +
