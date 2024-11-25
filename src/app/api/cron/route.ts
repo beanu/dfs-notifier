@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
 
 // Define types for the project
 interface Project {
@@ -24,8 +25,11 @@ export const dynamic = 'force-dynamic';
 // DingTalk webhook URL
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
-// Store the last known project ID
-let lastProjectId = 112;
+// Initialize Redis client
+const redis = Redis.fromEnv();
+
+// Key for storing last project ID
+const LAST_PROJECT_ID_KEY = 'last_project_id';
 
 // Function to fetch projects
 async function fetchProjects(): Promise<Project[]> {
@@ -149,14 +153,15 @@ async function sendDingTalkMessage(project: Project): Promise<void> {
 export async function GET() {
   try {
     const projects = await fetchProjects();
-    
-    console.log(`Last known project ID: ${lastProjectId}`);
 
     if (projects.length > 0) {
       const latestProjectId = projects[0].id;
       
+      // Get last known project ID from Redis
+      const lastProjectId = Number(await redis.get(LAST_PROJECT_ID_KEY)) || 0;
+      
       // Check if we have new projects
-      if (lastProjectId > 0 && latestProjectId > lastProjectId) {
+      if (latestProjectId > lastProjectId) {
         // Get all new projects
         const newProjects = projects.filter((p: Project) => p.id > lastProjectId);
         
@@ -164,13 +169,15 @@ export async function GET() {
         for (const project of newProjects) {
           await sendDingTalkMessage(project);
         }
+        
+        // Update the last known project ID in Redis
+        await redis.set(LAST_PROJECT_ID_KEY, latestProjectId);
       }
-      
-      // Update the last known project ID
-      lastProjectId = latestProjectId;
+
+      console.log(`Last known project ID: ${latestProjectId}`);
     }
 
-    return NextResponse.json({ success: true, lastProjectId });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in cron job:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
