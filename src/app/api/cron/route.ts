@@ -146,6 +146,8 @@ export async function GET() {
   try {
     const projects = await fetchProjects();
     
+    console.log(`Last known project ID: ${lastProjectId}`);
+
     if (projects.length > 0) {
       const latestProjectId = projects[0].id;
       
