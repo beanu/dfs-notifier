@@ -112,8 +112,8 @@ async function sendCountdownNotification(project: Project, minutesLeft: number):
   const message = {
     msgtype: 'markdown',
     markdown: {
-      title: 'DFS项目倒计时提醒',
-      text: `### 项目倒计时提醒\n` +
+      title: '【DFS】${project.project_name}抢购${minutesLeft}分钟倒计时提醒',
+      text: `### 抢购倒计时提醒\n` +
             `- 项目名称：${project.project_name}\n` +
             `- 项目ID：${project.id}\n` +
             `- 下一轮开始时间：${nextRoundTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}\n` +
