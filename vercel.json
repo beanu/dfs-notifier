@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/ppp-notifer",
-      "schedule": "*/1 * * * *"
+      "schedule": "*/2 * * * *"
     }
   ]
 }

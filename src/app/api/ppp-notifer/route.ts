@@ -171,7 +171,7 @@ export async function GET(req: Request) {
           timestamp: new Date().toISOString()
         }));
 
-        // if (shouldNotify) {
+        if (shouldNotify) {
           await sendCountdownNotification(project, minutesLeft);
           console.info(JSON.stringify({
             type: 'notification_sent',
@@ -180,7 +180,7 @@ export async function GET(req: Request) {
             minutes_left: minutesLeft,
             timestamp: new Date().toISOString()
           }));
-        // }
+        }
       }
     }
 
