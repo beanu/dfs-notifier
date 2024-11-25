@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 
 // Define types for the project
@@ -20,10 +19,10 @@ interface TokenBalance {
   symbol: string | null;
 }
 
+export const dynamic = 'force-dynamic';
+
 // DingTalk webhook URL
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
-
-export const dynamic = 'force-dynamic';
 
 // Store the last known project ID
 let lastProjectId = 112;

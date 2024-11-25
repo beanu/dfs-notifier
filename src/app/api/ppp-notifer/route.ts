@@ -144,22 +144,8 @@ export async function GET(req: Request) {
     // Fetch all projects
     const projects = await fetchProjects();
     
-    // Use structured logging for better visibility in Vercel
-    console.info(JSON.stringify({
-      type: 'projects_fetched',
-      count: projects.length,
-      timestamp: new Date().toISOString(),
-      data: projects
-    }));
-    
     // Fetch liked projects
     const likedProjects = await fetchLikedProjects("zhaoyunhello");
-    console.info(JSON.stringify({
-      type: 'liked_projects_fetched',
-      count: likedProjects.length,
-      timestamp: new Date().toISOString(),
-      data: likedProjects
-    }));
     
     // Check countdown for liked projects
     for (const project of projects) {
