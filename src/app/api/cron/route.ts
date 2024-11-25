@@ -23,7 +23,7 @@ interface TokenBalance {
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
 // Store the last known project ID
-let lastProjectId = 113;
+let lastProjectId = 112;
 
 // Function to fetch projects
 async function fetchProjects(): Promise<Project[]> {
