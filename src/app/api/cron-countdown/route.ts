@@ -139,15 +139,18 @@ export async function GET() {
   try {
     // Fetch all projects
     const projects = await fetchProjects();
+    console.log(projects);
     
     // Fetch liked projects
     const likedProjects = await fetchLikedProjects("zhaoyunhello");
+    console.log(likedProjects);
     
     // Check countdown for liked projects
     for (const project of projects) {
       const isLiked = likedProjects.some(lp => lp.pid === project.id);
       if (isLiked) {
         const { shouldNotify, minutesLeft } = checkProjectCountdown(project);
+        console.log(`Project ID: ${project.id}, Project Name: ${project.project_name}, Should Notify: ${shouldNotify}, Minutes Left: ${minutesLeft}`);
         if (shouldNotify) {
           await sendCountdownNotification(project, minutesLeft);
         }
