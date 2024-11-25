@@ -135,31 +135,70 @@ async function sendCountdownNotification(project: Project, minutesLeft: number):
 }
 
 // Main handler for the cron job
-export async function GET() {
+export async function GET(req: Request) {
   try {
     // Fetch all projects
     const projects = await fetchProjects();
-    console.log(projects);
+    
+    // Use structured logging for better visibility in Vercel
+    console.info(JSON.stringify({
+      type: 'projects_fetched',
+      count: projects.length,
+      timestamp: new Date().toISOString(),
+      data: projects
+    }));
     
     // Fetch liked projects
     const likedProjects = await fetchLikedProjects("zhaoyunhello");
-    console.log(likedProjects);
+    console.info(JSON.stringify({
+      type: 'liked_projects_fetched',
+      count: likedProjects.length,
+      timestamp: new Date().toISOString(),
+      data: likedProjects
+    }));
     
     // Check countdown for liked projects
     for (const project of projects) {
       const isLiked = likedProjects.some(lp => lp.pid === project.id);
       if (isLiked) {
         const { shouldNotify, minutesLeft } = checkProjectCountdown(project);
-        console.log(`Project ID: ${project.id}, Project Name: ${project.project_name}, Should Notify: ${shouldNotify}, Minutes Left: ${minutesLeft}`);
+        console.info(JSON.stringify({
+          type: 'project_countdown_check',
+          project_id: project.id,
+          project_name: project.project_name,
+          should_notify: shouldNotify,
+          minutes_left: minutesLeft,
+          timestamp: new Date().toISOString()
+        }));
+
         if (shouldNotify) {
           await sendCountdownNotification(project, minutesLeft);
+          console.info(JSON.stringify({
+            type: 'notification_sent',
+            project_id: project.id,
+            project_name: project.project_name,
+            minutes_left: minutesLeft,
+            timestamp: new Date().toISOString()
+          }));
         }
       }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      message: 'Cron job executed successfully',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    console.error('Error in cron job:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+    console.error(JSON.stringify({
+      type: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    }));
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Internal server error',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

@@ -5,7 +5,7 @@
       "schedule": "*/1 * * * *"
     },
     {
-      "path": "/api/cron-countdown",
+      "path": "/api/ppp-notifer",
       "schedule": "*/1 * * * *"
     }
   ]
