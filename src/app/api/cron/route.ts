@@ -158,7 +158,7 @@ export async function GET() {
       const latestProjectId = projects[0].id;
       
       // Get last known project ID from Redis
-      const lastProjectId = Number(await redis.get(LAST_PROJECT_ID_KEY)) || 0;
+      const lastProjectId = Number(await redis.get(LAST_PROJECT_ID_KEY)) || 113;
       
       // Check if we have new projects
       if (latestProjectId > lastProjectId) {
