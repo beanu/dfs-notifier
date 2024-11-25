@@ -116,8 +116,8 @@ async function sendCountdownNotification(project: Project, minutesLeft: number):
       text: `### 抢购倒计时提醒\n` +
             `- 项目名称：${project.project_name}\n` +
             `- 项目ID：${project.id}\n` +
-            `- 下一轮开始时间：${nextRoundTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}\n` +
-            `- ⏰ 距离下一轮开始还有${minutesLeft}分钟，请做好准备！`
+            `- 开始时间：${nextRoundTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}\n` +
+            `- ⏰ 距离开始还有${minutesLeft}分钟，请做好准备！`
     }
   };
 
