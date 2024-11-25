@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 
 // Define types for the project
@@ -22,6 +23,8 @@ interface TokenBalance {
 // DingTalk webhook URL
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
+export const dynamic = 'force-dynamic';
+
 // Store the last known project ID
 let lastProjectId = 112;
 
@@ -33,6 +36,7 @@ async function fetchProjects(): Promise<Project[]> {
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-cache',
       body: JSON.stringify({
         json: true,
         code: "dfs3protocol",
@@ -61,6 +65,7 @@ async function fetchTokenBalance(creator: string, tokenCode: string): Promise<st
   try {
     const response = await fetch('https://8.138.81.44/v1/chain/get_currency_balance', {
       method: 'POST',
+      cache: 'no-cache',
       headers: {
         'Content-Type': 'application/json',
       },

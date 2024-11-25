@@ -12,6 +12,8 @@ interface LikedProject {
   time: string;
 }
 
+export const dynamic = 'force-dynamic';
+
 // DingTalk webhook URL
 const dingTalkWebhookUrl = process.env.DINGTALK_WEBHOOK_URL;
 
@@ -20,6 +22,7 @@ async function fetchProjects(): Promise<Project[]> {
   try {
     const response = await fetch('https://8.138.81.44/v1/chain/get_table_rows', {
       method: 'POST',
+      cache: 'no-cache',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -54,6 +57,7 @@ async function fetchLikedProjects(account: string): Promise<LikedProject[]> {
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-cache',
       body: JSON.stringify({
         json: true,
         code: "dfs3protocol",
